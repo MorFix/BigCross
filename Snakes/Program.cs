@@ -6,13 +6,13 @@ namespace Snakes
     {
         public static void Main(string[] args)
         {
-            var randomList = CreateRandomList();
+            LinkedList<int> randomList = CreateRandomList();
             Print(randomList);
         }
 
         private static LinkedList<int> CreateRandomList()
         {
-            var random = new Random();
+            Random random = new Random();
             if (IsChanceMet(0.5, random))
             {
                 return CreateRandomSnake();
@@ -23,12 +23,12 @@ namespace Snakes
 
         private static LinkedList<int> CreateRandomSnake()
         {
-            var random = new Random();
-            var list = new LinkedList<int>();
+            Random random = new Random();
+            LinkedList<int> list = new LinkedList<int>();
 
             while (!IsChanceMet(0.01, random))
             {
-                list.AddLast(random.Next());        
+                list.AddLast(random.Next());
             }
 
             return list;
@@ -36,10 +36,10 @@ namespace Snakes
 
         private static LinkedList<int> CreateRandomCycle()
         {
-            var random = new Random();
-            var list = new LinkedList<int>();
-            var cycleStartNode = (LinkedListNode<int>) null;
-            var lastNode = (LinkedListNode<int>) null;
+            Random random = new Random();
+            LinkedList<int> list = new LinkedList<int>();
+            LinkedListNode<int> cycleStartNode = (LinkedListNode<int>)null;
+            LinkedListNode<int> lastNode = (LinkedListNode<int>)null;
 
             while (!IsChanceMet(0.02, random) || cycleStartNode == null)
             {
@@ -48,7 +48,7 @@ namespace Snakes
                 if (cycleStartNode == null && IsChanceMet(0.015, random))
                 {
                     cycleStartNode = lastNode;
-                }    
+                }
             }
 
             lastNode.Next = cycleStartNode;
@@ -64,17 +64,87 @@ namespace Snakes
         /// <returns>boolean</returns>
         private static bool IsChanceMet(double chance, Random random)
         {
-            var digitsAfterPoint = chance.ToString().Split('.')[1]?.Length ?? 0;
-            var maxValue = Math.Pow(10, digitsAfterPoint);
-            var rand = random.Next((int) maxValue);
+            int digitsAfterPoint = chance.ToString().Split('.')[1]?.Length ?? 0;
+            double maxValue = Math.Pow(10, digitsAfterPoint);
+            int rand = random.Next((int)maxValue);
 
             return rand < (chance * maxValue);
         }
 
         private static void Print(LinkedList<int> list)
         {
-            // TODO: Print
+            LinkedListNode<int> startOfSnailLoop = SnackorSnail(list);
+            if (startOfSnailLoop == null)
+            {
+                LinkedListNode<int> node = list.Head;
+                int snakeLength = 0;
+
+                Console.Write("snake: ");
+
+                while (node != null)
+                {
+                    snakeLength++;
+                    Console.Write(node.Data + "→");
+                    node = node.Next;
+                }
+
+                Console.WriteLine("null");
+
+                Console.WriteLine("The length of the snake is: " + snakeLength);
+            }
+            else
+            {
+                int meetCounter = 0;
+                LinkedListNode<int> node = list.Head;
+                int snailLength = 0;
+                int loopLength = 0;
+
+                Console.Write("snail: ");
+
+                while (meetCounter != 2)
+                {
+                    if (node == startOfSnailLoop)
+                    {
+                        meetCounter++;
+                        if (meetCounter == 2)
+                        {
+                            continue;
+                        }
+                        Console.Write(" ↱ " + node.Data + " → ");
+                    }
+
+                    else if ((node.Next == startOfSnailLoop) && (meetCounter > 0))
+                    {
+                        Console.WriteLine(node.Data + " ↲");
+                    }
+                    else
+                    {
+                        if (node.Next == startOfSnailLoop)
+                        {
+                            Console.Write(node.Data);
+                        }
+                        else
+                        {
+                            Console.Write(node.Data + " → ");
+                        }
+                    }
+
+
+                    if (meetCounter > 0)
+                    {
+                        loopLength++;
+                    }
+
+                    snailLength++;
+
+                    node = node.Next;
+                }
+
+                Console.WriteLine("The length of the snail is: " + snailLength + " and the length of the loop is: " + loopLength);
+            }
         }
+
+        
 
         private static LinkedListNode<int> SnackorSnail(LinkedList<int> list)
         {
@@ -82,8 +152,8 @@ namespace Snakes
             // "Fast" will get 1 more step away on each iteration.
             // If they meet, it means that "fast" got N steps away from slow, but it didn't reach NULL.
             // This would mean that there is a cycle.
-            var slowNode = list.Head;
-            var fastNode = list.Head;
+            LinkedListNode<int> slowNode = list.Head;
+            LinkedListNode<int> fastNode = list.Head;
 
             do
             {
@@ -99,7 +169,7 @@ namespace Snakes
 
             // Finding the node that have 2 "Next"s set to
             slowNode = list.Head;
-            while(slowNode.Next != fastNode.Next)
+            while (slowNode.Next != fastNode.Next)
             {
                 slowNode = slowNode.Next;
                 fastNode = fastNode.Next;
