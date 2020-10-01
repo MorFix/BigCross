@@ -9,59 +9,75 @@ namespace NearestPoint
     class Program
     {
         private static readonly BinarySearchTree<Point> BinarySearchTree = new BinarySearchTree<Point>();
-        private static List<Point> _listOfPoints = new List<Point>();
         private static readonly Random Random = new Random();
-        private static readonly object SyncLock = new object();
+
         public static void Main(string[] args)
         {
             BuildTree();
-            _listOfPoints = BinarySearchTree.GetNodesInOrder(BinarySearchTree.Root, new List<Point>());
-            printPoints();
-            Console.ReadLine();
+
+            PrintTree(BinarySearchTree.Root);
+
+            Console.Write("X = ");
+            var x = double.Parse(Console.ReadLine());
+            Console.WriteLine();
+
+
+            var nearestNode = NearestRightPoint(BinarySearchTree.Root, x) ?? new BinaryNode<Point>(new Point(0, 0));
+            Console.WriteLine($"Nearest Point: {nearestNode.Value}");
+            Console.ReadKey();
         }
 
-        public static void BuildTree()
+        private static void BuildTree()
         {
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Point newPoint = GetRandomPoint();
+
+                // The insert methods preserves the Binary Search Tree order, so the search would be O(logN)
                 BinarySearchTree.Insert(newPoint);
             }
         }
 
-        public static void printPoints()
+        private static void PrintTree(BinaryNode<Point> node)
         {
-            for (int i = 0; i < 100; i++)
+            if (node == null)
             {
-                for (int j = 0; j < 100; j++)
-                {
-                    Point newPoint = new Point(i,j);
-
-                    if (_listOfPoints.Contains(newPoint))
-                    {
-                        Console.Write("O");
-                    }
-                    else
-                    {
-                        Console.Write(" ");
-                    }
-                }
-
-                Console.WriteLine();
+                return;
             }
+
+            Console.WriteLine(node.Value);
+
+            PrintTree(node.RightChild);
+            PrintTree(node.LeftChild);
         }
 
-       
-
-        public static Point GetRandomPoint()
+        private static Point GetRandomPoint()
         {
-            lock (SyncLock)
-            {
-                 int x = Random.Next(0, 100);
-                 int y = Random.Next(0, 100);
-                 return new Point(x, y);
+            var x = Random.NextDouble() * 100;
+            var y = Random.NextDouble() * 100;
 
+            return new Point(x, y);
+        }
+
+        private static BinaryNode<Point> NearestRightPoint(BinaryNode<Point> node, double x, BinaryNode<Point> currentClosestNode = null)
+        {
+            if (node == null)
+            {
+                return currentClosestNode;
             }
+
+            var compare = node.Value.CompareTo(new Point(x, 0));
+
+            // Checking if we got a new minimal difference
+            if (compare > 0 && (currentClosestNode == null || node.Value.X < currentClosestNode.Value.X))
+            {
+                currentClosestNode = node;
+            }
+
+            // If x is less (or equal, since we ignore this case) than current X move right, else - left  
+            return compare <= 0
+                ? NearestRightPoint(node.RightChild, x, currentClosestNode)
+                : NearestRightPoint(node.LeftChild, x, currentClosestNode);
         }
     }
 }
